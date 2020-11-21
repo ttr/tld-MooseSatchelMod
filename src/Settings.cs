@@ -4,10 +4,20 @@ namespace MooseSatchelMod
 {
 	internal class MooseSatchelModSettings : JsonModSettings
 	{
-		[Name("Arrowhead craft time")]
-		[Description("Minutes to craft arrowhead. Default is 60, recommended 20-40")]
-		[Slider(1, 180)]
-		public int arrowHeadCraftTime = 30;
+		[Name("Scent Multiplier")]
+		[Description("Recommended: 0.1")]
+		[Slider(0f, 1f)]
+		public float scent = 0.1f;
+
+		[Name("Indoor base decay multiplier")]
+		[Description("Recommended: 0.5")]
+		[Slider(0f, 1f)]
+		public float indoor = 0.5f;
+
+		[Name("Outdoor base decay multiplier")]
+		[Description("Recommended: 0")]
+		[Slider(0f, 1f)]
+		public float outdoor = 0f;
 
 	}
 	internal static class Settings

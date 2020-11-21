@@ -1,4 +1,5 @@
 using Harmony;
+using System;
 using MelonLoader;
 using UnityEngine;
 
@@ -6,33 +7,64 @@ namespace MooseSatchelMod
 {
     internal static class Patches
     {
+        // load and save custom data
+        [HarmonyPatch(typeof(SaveGameSystem), "RestoreGlobalData", new Type[] { typeof(string) })]
+        internal class SaveGameSystemPatch_RestoreGlobalData
+        {
+            internal static void Postfix(string name)
+            {
+                MooseSatchelMod.LoadData(name);
+            }
+        }
+
+        [HarmonyPatch(typeof(SaveGameSystem), "SaveGlobalData", new Type[] { typeof(SaveSlotType), typeof(string) })]
+        internal class SaveGameSystemPatch_SaveGlobalData
+        {
+            public static void Postfix(SaveSlotType gameMode, string name)
+            {
+                MooseSatchelMod.SaveData(gameMode, name);
+            }
+        }
 
         [HarmonyPatch(typeof(Inventory), "AddGear")]
         public class Invetory_AddGear
         {
             public static void Postfix(GameObject go)
             {
+                //MelonLogger.Log("AddGear " + go.name);
                 GearItem gi = go.GetComponent<GearItem>();
-                if (gi.m_FoodItem)
+                if (gi.name == "GEAR_Gut" || MooseSatchelMod.isPerishableFood(gi))
                 {
-                    FoodItem fi = go.GetComponent<FoodItem>();
-                    MelonLogger.Log("AddGear" + go.name + " " + gi.m_FoodWeight + " " + gi.m_WeightKG + " " + fi.m_DailyHPDecayInside + " " + fi.m_DailyHPDecayOutside);
-                }
-                if (gi.name == "GEAR_MooseHideBag")
-                {
-
-                    MelonLogger.Log("AddGear" + go.name + " " + gi.m_FoodWeight + " " + gi.m_WeightKG + " " + gi.m_ClothingItem);
+                    MooseSatchelMod.addToBag(gi);
                 }
             }
         }
 
-        [HarmonyPatch(typeof(Inventory), "RemoveGear", typeof(GameObject))]
-        public class Invetory_RemoveGear
+        [HarmonyPatch(typeof(Inventory), "DestroyGear", typeof(GameObject))]
+        public class Invetory_DestroyGear
         {
             public static void Postfix(GameObject go)
             {
 
-                MelonLogger.Log("RemoveGear " + go.name);
+                //MelonLogger.Log("DestroyGear " + go.name);
+                GearItem gi = go.GetComponent<GearItem>();
+                if (gi.name == "GEAR_Gut" || MooseSatchelMod.isPerishableFood(gi))
+                {
+                    MooseSatchelMod.removeFromBag(gi);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(GearItem), "Drop")]
+        public class GearItem_Drop
+        {
+            public static void Postfix(GearItem __instance)
+            {
+                //MelonLogger.Log("Drop " + __instance.name);
+                if (__instance.name == "GEAR_Gut" || MooseSatchelMod.isPerishableFood(__instance))
+                {
+                    MooseSatchelMod.removeFromBag(__instance);
+                }
 
             }
         }
@@ -42,7 +74,12 @@ namespace MooseSatchelMod
         {
             public static void Postfix(GearItem gi)
             {
-                MelonLogger.Log("PutOn " + gi.name);
+                //MelonLogger.Log("PutOn " + gi.name);
+                if (gi.name == "GEAR_MooseHideBag")
+                {
+                    MooseSatchelMod.putBag(gi);
+                }
+
             }
         }
         [HarmonyPatch(typeof(PlayerManager), "TakeOffClothingItem")]
@@ -50,9 +87,25 @@ namespace MooseSatchelMod
         {
             public static void Postfix(GearItem gi)
             {
-                MelonLogger.Log("TakeOff " + gi.name);
+                //MelonLogger.Log("TakeOff " + gi.name);
+                if (gi.name == "GEAR_MooseHideBag")
+                {
+                    MooseSatchelMod.removeBag(gi);
+                }
             }
         }
-
+        [HarmonyPatch(typeof(ItemDescriptionPage), "BuildItemDescription")]
+        public class ItemDescriptionPage_BuildItemDescription
+        {
+            private static void Postfix(GearItem gi, ref string __result)
+            {
+                if ((gi.name == "GEAR_Gut" || MooseSatchelMod.isPerishableFood(gi)) && MooseSatchelMod.isBagged(gi))
+                {
+                    //MelonLogger.Log("BagDesc " + gi.name);
+                    __result += "\n(This item is in Moose bag)";
+                }
+            }
+        }
     }
+
 }
