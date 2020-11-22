@@ -167,7 +167,7 @@ namespace MooseSatchelMod
         internal static void removeFromBag(GearItem gi)
         {
             string guid = Utils.GetGuidFromGameObject(gi.gameObject);
-            if (MD.ContainsKey(guid))
+            if (!string.IsNullOrEmpty(guid) && MD.ContainsKey(guid))
             {
                 string bgid = MD[guid].bagId;
                 //MelonLogger.Log("removefrombag: " + gi.name + " " + gi.m_WeightKG + "guid: " + guid + "bgid: " + bgid);

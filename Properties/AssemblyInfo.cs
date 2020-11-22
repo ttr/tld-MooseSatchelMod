@@ -35,5 +35,5 @@ using MelonLoader;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
-[assembly: MelonModInfo(typeof(MooseSatchelMod.MooseSatchelMod), "MooseSatchelMod", "1.0", "ttr")]
+[assembly: MelonModInfo(typeof(MooseSatchelMod.MooseSatchelMod), "MooseSatchelMod", "1.1", "ttr")]
 [assembly: MelonModGame("Hinterland", "TheLongDark")]
