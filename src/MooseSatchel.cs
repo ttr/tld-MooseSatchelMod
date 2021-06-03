@@ -6,6 +6,15 @@ using System;
 
 namespace MooseSatchelMod
 {
+    public static class BuildInfo
+    {
+        public const string Name = "MooseSatchelMod";
+        public const string Description = "A mod to reduce scent and decay for meat, fish and guts if added to Moose Bag.";
+        public const string Author = "ttr";
+        public const string Company = null;
+        public const string Version = "1.2.0";
+        public const string DownloadLink = null;
+    }
     internal class MooseSatchelMod : MelonMod
     {
         private static int dataVersion = 1;
@@ -15,7 +24,7 @@ namespace MooseSatchelMod
         private static Dictionary<string, MooseBagData> MBD = new Dictionary<string, MooseBagData>();
         public override void OnApplicationStart()
         {
-            Debug.Log($"[{InfoAttribute.Name}] Version {InfoAttribute.Version} loaded!");
+            Debug.Log($"[{Info.Name}] Version {Info.Version} loaded!");
             Settings.OnLoad();
         }
 
@@ -130,7 +139,8 @@ namespace MooseSatchelMod
         }
         internal static void addToBag(GearItem gi)
         {
-            string bgid = findBagSpace(gi.m_WeightKG);
+            float gikg = gi.GetItemWeightKG();
+            string bgid = findBagSpace(gikg);
             if (!string.IsNullOrEmpty(bgid))
             {
                 string guid = Utils.GetGuidFromGameObject(gi.gameObject);
@@ -139,7 +149,7 @@ namespace MooseSatchelMod
                     Utils.SetGuidForGameObject(gi.gameObject, Guid.NewGuid().ToString());
                     guid = Utils.GetGuidFromGameObject(gi.gameObject);
                 }
-                //MelonLogger.Log("addtobag: " + gi.name + " " + gi.m_WeightKG + "guid: " + guid + "bgid: " + bgid);
+                //MelonLogger.Log("addtobag: " + gi.name + " " + gikg + " guid: " + guid + " bgid: " + bgid);
 
                 if (!MD.ContainsKey(guid))
                 {
@@ -151,8 +161,8 @@ namespace MooseSatchelMod
                 MD[guid].foodId = guid;
                 MD[guid].bagId = bgid;
                 MD[guid].scentIntensity = gi.m_ScentIntensity;
-                MD[guid].weight = gi.m_WeightKG;
-                MBD[bgid].weight += gi.m_WeightKG;
+                MD[guid].weight = gikg;
+                MBD[bgid].weight += gikg;
 
                 if (isPerishableFood(gi))
                 {
