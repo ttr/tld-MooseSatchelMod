@@ -1,38 +1,31 @@
-using Harmony;
-using System;
-using MelonLoader;
+using HarmonyLib;
 using UnityEngine;
+using Il2Cpp;
+using MelonLoader;
+
 
 namespace MooseSatchelMod
 {
     internal static class Patches
     {
-        // load and save custom data
-        [HarmonyPatch(typeof(SaveGameSystem), "RestoreGlobalData", new Type[] { typeof(string) })]
-        internal class SaveGameSystemPatch_RestoreGlobalData
+        [HarmonyPatch(typeof(GameManager), "Awake")]
+        internal class GameManager_Awake
         {
-            internal static void Postfix(string name)
+            public static void Prefix()
             {
-                MooseSatchelMod.LoadData(name);
-            }
-        }
-
-        [HarmonyPatch(typeof(SaveGameSystem), "SaveGlobalData", new Type[] { typeof(SaveSlotType), typeof(string) })]
-        internal class SaveGameSystemPatch_SaveGlobalData
-        {
-            public static void Postfix(SaveSlotType gameMode, string name)
-            {
-                MooseSatchelMod.SaveData(gameMode, name);
+                if (!InterfaceManager.IsMainMenuEnabled())
+                {
+                    MooseSatchelMod.LoadData();
+                }
             }
         }
 
         [HarmonyPatch(typeof(Inventory), "AddGear")]
         public class Invetory_AddGear
         {
-            public static void Postfix(GameObject go)
+            public static void Postfix(GearItem gi)
             {
-                //MelonLogger.Log("AddGear " + go.name);
-                GearItem gi = go.GetComponent<GearItem>();
+                //MelonLogger.Msg("AddGear " + gi.name);
                 if (gi.name == "GEAR_Gut" || MooseSatchelMod.isPerishableFood(gi))
                 {
                     MooseSatchelMod.addToBag(gi);
@@ -46,7 +39,7 @@ namespace MooseSatchelMod
             public static void Postfix(GameObject go)
             {
 
-                //MelonLogger.Log("DestroyGear " + go.name);
+                //MelonLogger.Msg("DestroyGear " + go.name);
                 GearItem gi = go.GetComponent<GearItem>();
                 if (gi.name == "GEAR_Gut" || MooseSatchelMod.isPerishableFood(gi))
                 {
@@ -60,7 +53,7 @@ namespace MooseSatchelMod
         {
             public static void Postfix(GearItem __instance)
             {
-                //MelonLogger.Log("Drop " + __instance.name);
+                //MelonLogger.Msg("Drop " + __instance.name);
                 if (__instance.name == "GEAR_Gut" || MooseSatchelMod.isPerishableFood(__instance))
                 {
                     MooseSatchelMod.removeFromBag(__instance);
@@ -74,7 +67,7 @@ namespace MooseSatchelMod
         {
             public static void Postfix(GearItem gi)
             {
-                //MelonLogger.Log("PutOn " + gi.name);
+                //MelonLogger.Msg("PutOn " + gi.name);
                 if (gi.name == "GEAR_MooseHideBag")
                 {
                     MooseSatchelMod.putBag(gi);
@@ -87,23 +80,34 @@ namespace MooseSatchelMod
         {
             public static void Postfix(GearItem gi)
             {
-                //MelonLogger.Log("TakeOff " + gi.name);
+                //MelonLogger.Msg("TakeOff " + gi.name);
                 if (gi.name == "GEAR_MooseHideBag")
                 {
                     MooseSatchelMod.removeBag(gi);
                 }
             }
         }
+        /*
         [HarmonyPatch(typeof(ItemDescriptionPage), "BuildItemDescription")]
         public class ItemDescriptionPage_BuildItemDescription
         {
             private static void Postfix(GearItem gi, ref string __result)
             {
+                MelonLogger.Msg("ItemDesc " + gi.name);
                 if ((gi.name == "GEAR_Gut" || MooseSatchelMod.isPerishableFood(gi)) && MooseSatchelMod.isBagged(gi))
                 {
-                    //MelonLogger.Log("BagDesc " + gi.name);
+                    //MelonLogger.Msg("BagDesc " + gi.name);
                     __result += "\n(This item is in Moose bag)";
                 }
+            }
+        }
+        */
+        [HarmonyPatch(typeof(Inventory), nameof(Inventory.GetExtraScentIntensity))]
+        internal class Inventory_GetExtraScentIntensity
+        {
+            private static void Postfix(ref float __result)
+            {
+                    __result -= MooseSatchelMod.baggedScent();
             }
         }
     }
