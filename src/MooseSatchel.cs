@@ -33,13 +33,14 @@ namespace MooseSatchelMod
 
         internal static void LoadData()
         {
+            //MelonLogger.Msg("Loading data");
             MD.Clear();
             MBD.Clear();
             string? data = SaveMgr.Load("MD");
 
             if (!string.IsNullOrEmpty(data))
             {
-                //MelonLogger.Log("JSON loaded " + data);
+                //MelonLogger.Msg("JSON loaded " + data);
                 var foo = JSON.Load(data);
                 foreach (var entry in foo as ProxyObject)
                 {
@@ -48,11 +49,11 @@ namespace MooseSatchelMod
                     MD.Add(entry.Key, lMD);
                 }
             }
-            data = null;
+
             data = SaveMgr.Load("MBD");
             if (!string.IsNullOrEmpty(data))
             {
-                //MelonLogger.Log("JSON loaded " + data);
+                //MelonLogger.Msg("JSON loaded " + data);
                 var foo = JSON.Load(data);
                 foreach (var entry in foo as ProxyObject)
                 {
@@ -76,10 +77,9 @@ namespace MooseSatchelMod
 
         internal static void SaveData()
         {
-            string data = JSON.Dump(MD, EncodeOptions.NoTypeHints);
-            SaveMgr.Save(data, "MD");
-            data = JSON.Dump(MBD, EncodeOptions.NoTypeHints);
-            SaveMgr.Save(data, "MBD");
+            //MelonLogger.Msg("saving data");
+            SaveMgr.Save(JSON.Dump(MD, EncodeOptions.NoTypeHints), "MD");
+            SaveMgr.Save(JSON.Dump(MBD, EncodeOptions.NoTypeHints), "MBD");
         }
 
         public static bool isPerishableFood(GearItem gi)
@@ -151,30 +151,31 @@ namespace MooseSatchelMod
                     ObjectGuid.MaybeAttachObjectGuidAndRegister(gi.gameObject, Guid.NewGuid().ToString());
                     guid = ObjectGuid.GetGuidFromGameObject(gi.gameObject);
                 }
-                //MelonLogger.Log("addtobag: " + gi.name + " " + gikg + " guid: " + guid + " bgid: " + bgid);
+
 
                 if (!MD.ContainsKey(guid))
                 {
                     MooseData lMD = new MooseData();
                     MD.Add(guid, lMD);
-                }
-                MD[guid].timestamp = GameManager.GetTimeOfDayComponent().GetTODSeconds(GameManager.GetTimeOfDayComponent().GetSecondsPlayedUnscaled());
-                MD[guid].ver = dataVersion;
-                MD[guid].foodId = guid;
-                MD[guid].bagId = bgid;
-                //MD[guid].scentIntensity = gi.m_Scent.GetRange();
-                MD[guid].weight = gikg;
-                MBD[bgid].weight += gikg;
-                MBD[bgid].scent += gi.m_Scent.GetRange();
+                    //MelonLogger.Msg("addtobag: " + gi.name + " " + gikg + " guid: " + guid + " bgid: " + bgid);
+                    MD[guid].timestamp = GameManager.GetTimeOfDayComponent().GetTODSeconds(GameManager.GetTimeOfDayComponent().GetSecondsPlayedUnscaled());
+                    MD[guid].ver = dataVersion;
+                    MD[guid].foodId = guid;
+                    MD[guid].bagId = bgid;
+                    //MD[guid].scentIntensity = gi.m_Scent.GetRange();
+                    MD[guid].weight = gikg;
+                    MBD[bgid].weight += gikg;
+                    MBD[bgid].scent += gi.m_Scent.GetRange();
 
-                if (isPerishableFood(gi))
-                {
-                    FoodItem fi = gi.GetComponent<FoodItem>();
-                    MD[guid].foodDecayIndoor = fi.m_DailyHPDecayInside;
-                    MD[guid].foodDecayOutdoor = fi.m_DailyHPDecayOutside;
+                    if (isPerishableFood(gi))
+                    {
+                        FoodItem fi = gi.GetComponent<FoodItem>();
+                        MD[guid].foodDecayIndoor = fi.m_DailyHPDecayInside;
+                        MD[guid].foodDecayOutdoor = fi.m_DailyHPDecayOutside;
+                    }
+                    applyStats(gi, true);
+                    SaveData();
                 }
-                applyStats(gi, true);
-                SaveData();
             }
         }
         internal static void removeFromBag(GearItem gi)
@@ -183,7 +184,7 @@ namespace MooseSatchelMod
             if (!string.IsNullOrEmpty(guid) && MD.ContainsKey(guid))
             {
                 string bgid = MD[guid].bagId;
-                //MelonLogger.Log("removefrombag: " + gi.name + " " + gi.m_WeightKG + "guid: " + guid + "bgid: " + bgid);
+                //MelonLogger.Msg("removefrombag: " + gi.name + " " + gi.WeightKG + "guid: " + guid + "bgid: " + bgid);
                 applyStats(gi, false);
 
                 MBD[bgid].weight -= MD[guid].weight;
@@ -217,7 +218,6 @@ namespace MooseSatchelMod
                 {
                     addToBag(gi);
                 }
-                SaveData();
             }
         }
         internal static void removeBag(GearItem bag)
@@ -237,9 +237,8 @@ namespace MooseSatchelMod
                     }
                 }
 
-                //MelonLogger.Log(guid);
+                //MelonLogger.Msg(guid);
                 MBD.Remove(guid);
-                SaveData();
             }
         }
         public static string findBagSpace(float weight)
@@ -261,7 +260,7 @@ namespace MooseSatchelMod
             {
                 scent += MBD[bag].scent;
             }
-            //MelonLogger.Msg("BagScent " + scent);
+            ////MelonLogger.Msg("BagScent " + scent);
             return scent;
 
         }

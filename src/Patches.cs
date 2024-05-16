@@ -8,18 +8,20 @@ namespace MooseSatchelMod
 {
     internal static class Patches
     {
-        [HarmonyPatch(typeof(GameManager), "Awake")]
+ 
+        [HarmonyPatch(typeof(GameManager), "AllScenesLoaded")]
         internal class GameManager_Awake
         {
             public static void Prefix()
             {
-                if (!InterfaceManager.IsMainMenuEnabled())
+                //if (!InterfaceManager.IsMainMenuEnabled())
+                if (GameManager.GetInventoryComponent())
                 {
                     MooseSatchelMod.LoadData();
                 }
+                MooseSatchelMod.LoadData();
             }
         }
-
         [HarmonyPatch(typeof(Inventory), "AddGear")]
         public class Invetory_AddGear
         {
