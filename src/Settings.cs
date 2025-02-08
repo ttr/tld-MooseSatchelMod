@@ -5,24 +5,24 @@ namespace MooseSatchelMod
 	internal class MooseSatchelModSettings : JsonModSettings
 	{
 		[Name("Scent Multiplier")]
-		[Description("Recommended: 0.1")]
+		[Description("Multiplier of scent of items in bag. Lower means less scent.\nRecommended: 0.1")]
 		[Slider(0f, 1f)]
 		public float scent = 0.1f;
 
 		[Name("Indoor base decay multiplier")]
-		[Description("Recommended: 0.5")]
+		[Description("Mutiplier of decay of perishabe food, that is in bag while indoor. Lower means slower decay.\nRecommended: 0.5")]
 		[Slider(0f, 1f)]
 		public float indoor = 0.5f;
 
 		[Name("Outdoor base decay multiplier")]
-		[Description("Recommended: 0")]
+		[Description("Mutiplier of decay of perishabe food, that is in bag while outdoor. Lower means slower decay.\nRecommended: 0 (no decay)")]
 		[Slider(0f, 1f)]
 		public float outdoor = 0f;
 
 	}
 	internal static class Settings
 	{
-		public static MooseSatchelModSettings options;
+		public static MooseSatchelModSettings options = new();
 		public static void OnLoad()
 		{
 			options = new MooseSatchelModSettings();

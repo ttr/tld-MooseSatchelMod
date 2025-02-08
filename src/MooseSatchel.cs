@@ -14,7 +14,7 @@ namespace MooseSatchelMod
         public const string Description = "A mod to reduce scent and decay for meat, fish and guts if added to Moose Bag.";
         public const string Author = "ttr";
         public const string Company = null;
-        public const string Version = "2.0.0";
+        public const string Version = "2.2.0";
         public const string DownloadLink = null;
     }
     internal class MooseSatchelMod : MelonMod
@@ -25,22 +25,25 @@ namespace MooseSatchelMod
         private static Dictionary<string, MooseBagData> MBD = new Dictionary<string, MooseBagData>();
         internal static ModDataManager SaveMgr = new ModDataManager("MooseSatchelMod", false);
 
-        public override void OnApplicationStart()
+        public override void OnInitializeMelon()
         {
             Debug.Log($"[{Info.Name}] Version {Info.Version} loaded!");
             Settings.OnLoad();
         }
-
+        public static void Log(string msg)
+        {
+          //MelonLogger.Msg(msg);
+        }
         internal static void LoadData()
         {
-            //MelonLogger.Msg("Loading data");
+            MooseSatchelMod.Log("Loading data");
             MD.Clear();
             MBD.Clear();
             string? data = SaveMgr.Load("MD");
 
             if (!string.IsNullOrEmpty(data))
             {
-                //MelonLogger.Msg("JSON loaded " + data);
+                MooseSatchelMod.Log("JSON loaded " + data);
                 var foo = JSON.Load(data);
                 foreach (var entry in foo as ProxyObject)
                 {
@@ -53,7 +56,7 @@ namespace MooseSatchelMod
             data = SaveMgr.Load("MBD");
             if (!string.IsNullOrEmpty(data))
             {
-                //MelonLogger.Msg("JSON loaded " + data);
+                MooseSatchelMod.Log("JSON loaded " + data);
                 var foo = JSON.Load(data);
                 foreach (var entry in foo as ProxyObject)
                 {
@@ -77,7 +80,7 @@ namespace MooseSatchelMod
 
         internal static void SaveData()
         {
-            //MelonLogger.Msg("saving data");
+            //MooseSatchelMod.Log("saving data");
             SaveMgr.Save(JSON.Dump(MD, EncodeOptions.NoTypeHints), "MD");
             SaveMgr.Save(JSON.Dump(MBD, EncodeOptions.NoTypeHints), "MBD");
         }
@@ -93,14 +96,17 @@ namespace MooseSatchelMod
                     name.Contains("meatrabbit") ||
                     name.Contains("meatwolf") ||
                     name.Contains("meatmoose") ||
+                    name.Contains("meatptarmigan") ||
                     name.Contains("cohosalmon") ||
                     name.Contains("lakewhitefish") ||
                     name.Contains("rainbowtrout") ||
+                    name.Contains("burbot") ||
+                    name.Contains("goldeye") ||
+                    name.Contains("rockfish") ||
                     name.Contains("smallmouthbass")
                     )
                 {
                     return true;
-
                 }
             }
             return false;
@@ -141,7 +147,7 @@ namespace MooseSatchelMod
         }
         internal static void addToBag(GearItem gi)
         {
-            float gikg = gi.GetItemWeightKG();
+            float gikg = gi.GetItemWeightKG().ToQuantity(1);
             string bgid = findBagSpace(gikg);
             if (!string.IsNullOrEmpty(bgid))
             {
@@ -157,7 +163,7 @@ namespace MooseSatchelMod
                 {
                     MooseData lMD = new MooseData();
                     MD.Add(guid, lMD);
-                    //MelonLogger.Msg("addtobag: " + gi.name + " " + gikg + " guid: " + guid + " bgid: " + bgid);
+                    MooseSatchelMod.Log("addtobag: " + gi.name + " " + gikg + " guid: " + guid + " bgid: " + bgid);
                     MD[guid].timestamp = GameManager.GetTimeOfDayComponent().GetTODSeconds(GameManager.GetTimeOfDayComponent().GetSecondsPlayedUnscaled());
                     MD[guid].ver = dataVersion;
                     MD[guid].foodId = guid;
@@ -184,7 +190,7 @@ namespace MooseSatchelMod
             if (!string.IsNullOrEmpty(guid) && MD.ContainsKey(guid))
             {
                 string bgid = MD[guid].bagId;
-                //MelonLogger.Msg("removefrombag: " + gi.name + " " + gi.WeightKG + "guid: " + guid + "bgid: " + bgid);
+                MooseSatchelMod.Log("removefrombag: " + gi.name + " " + gi.WeightKG + "guid: " + guid + "bgid: " + bgid);
                 applyStats(gi, false);
 
                 MBD[bgid].weight -= MD[guid].weight;
@@ -237,7 +243,7 @@ namespace MooseSatchelMod
                     }
                 }
 
-                //MelonLogger.Msg(guid);
+                MooseSatchelMod.Log(guid);
                 MBD.Remove(guid);
             }
         }
@@ -260,8 +266,8 @@ namespace MooseSatchelMod
             {
                 scent += MBD[bag].scent;
             }
-            ////MelonLogger.Msg("BagScent " + scent);
-            return scent;
+            MooseSatchelMod.Log("BagScent " + scent);
+            return scent * (1f - Settings.options.scent);
 
         }
     }
