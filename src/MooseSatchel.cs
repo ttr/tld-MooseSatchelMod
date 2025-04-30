@@ -14,7 +14,7 @@ namespace MooseSatchelMod
         public const string Description = "A mod to reduce scent and decay for meat, fish and guts if added to Moose Bag.";
         public const string Author = "ttr";
         public const string Company = null;
-        public const string Version = "2.2.0";
+        public const string Version = "2.2.2";
         public const string DownloadLink = null;
     }
     internal class MooseSatchelMod : MelonMod
@@ -85,25 +85,59 @@ namespace MooseSatchelMod
             SaveMgr.Save(JSON.Dump(MBD, EncodeOptions.NoTypeHints), "MBD");
         }
 
-        public static bool isPerishableFood(GearItem gi)
+        public static bool isPerishableGroup1(GearItem gi) // smelly
         {
             string name = gi.name.ToLower();
-            if (gi.m_FoodItem)
+            if (Settings.options.storeG1)
             {
                 if (
-                    name.Contains("meatbear") ||
-                    name.Contains("meatdeer") ||
-                    name.Contains("meatrabbit") ||
-                    name.Contains("meatwolf") ||
-                    name.Contains("meatmoose") ||
-                    name.Contains("meatptarmigan") ||
-                    name.Contains("cohosalmon") ||
-                    name.Contains("lakewhitefish") ||
-                    name.Contains("rainbowtrout") ||
-                    name.Contains("burbot") ||
-                    name.Contains("goldeye") ||
-                    name.Contains("rockfish") ||
-                    name.Contains("smallmouthbass")
+                    name == "gear_gut" ||
+                    name == "animalfat" ||
+                    name == "fatraw"
+                    )
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public static bool isPerishableGroup2(GearItem gi) // bloody
+        {
+            string name = gi.name.ToLower();
+            if (Settings.options.storeG2)
+            {
+                if (
+                    name.EndsWith("meatbear") ||
+                    name.EndsWith("meatcougar") ||
+                    name.EndsWith("meatdeer") ||
+                    name.EndsWith("meatrabbit") ||
+                    name.EndsWith("meatwolf") ||
+                    name.EndsWith("meatmoose") ||
+                    name.EndsWith("meatptarmigan") ||
+                    name.EndsWith("cohosalmon") ||
+                    name.EndsWith("lakewhitefish") ||
+                    name.EndsWith("rainbowtrout") ||
+                    name.EndsWith("burbot") ||
+                    name.EndsWith("goldeye") ||
+                    name.EndsWith("rockfish") ||
+                    name.EndsWith("smallmouthbass")
+                    )
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public static bool isPerishableGroup3(GearItem gi) // cooked food
+        {
+            string name = gi.name.ToLower();
+            if (Settings.options.storeG3)
+            {
+                if (
+                    name.StartsWith("cookedpie") ||
+                    name.StartsWith("uncookedpie") ||
+                    name == "curedfish" ||
+                    name == "curedmeat"
                     )
                 {
                     return true;
@@ -127,7 +161,7 @@ namespace MooseSatchelMod
 
             if (freeze)
             {
-                if (isPerishableFood(gi))
+                if (gi.m_FoodItem)
                 {
                     FoodItem fi = gi.GetComponent<FoodItem>();
                     fi.m_DailyHPDecayInside = MD[guid].foodDecayIndoor * Settings.options.indoor;
@@ -136,7 +170,7 @@ namespace MooseSatchelMod
             }
             else
             {
-                if (isPerishableFood(gi))
+                if (gi.m_FoodItem)
                 {
                     FoodItem fi = gi.GetComponent<FoodItem>();
                     fi.m_DailyHPDecayInside = MD[guid].foodDecayIndoor;
@@ -173,7 +207,7 @@ namespace MooseSatchelMod
                     MBD[bgid].weight += gikg;
                     MBD[bgid].scent += gi.m_Scent.GetRange();
 
-                    if (isPerishableFood(gi))
+                    if (gi.m_FoodItem)
                     {
                         FoodItem fi = gi.GetComponent<FoodItem>();
                         MD[guid].foodDecayIndoor = fi.m_DailyHPDecayInside;
@@ -220,7 +254,7 @@ namespace MooseSatchelMod
             foreach (GearItemObject item in inventoryComponent.m_Items)
             {
                 GearItem gi = item;
-                if (gi.name == "GEAR_Gut" || isPerishableFood(gi))
+                if (isPerishableGroup1(gi) || isPerishableGroup2(gi) || isPerishableGroup3(gi))
                 {
                     addToBag(gi);
                 }
@@ -237,7 +271,7 @@ namespace MooseSatchelMod
                 foreach (GearItemObject item in inventoryComponent.m_Items)
                 {
                     GearItem gi = item;
-                    if (gi.name == "GEAR_Gut" || isPerishableFood(gi))
+                    if (isPerishableGroup1(gi) || isPerishableGroup2(gi) || isPerishableGroup3(gi))
                     {
                         removeFromBag(gi);
                     }
@@ -257,7 +291,7 @@ namespace MooseSatchelMod
                     return guid;
                 }
             }
-            return null;
+            return "";
         }
         public static float baggedScent()
         {

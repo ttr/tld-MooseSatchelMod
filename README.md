@@ -11,6 +11,6 @@ Partially consuming food probably will not reduce size
 If in doubt, re-equipp moose bag(s) so it will re-add all items.
 (yes, mod was build to support mutiple bags, but base game does not)
 
-Also, Guts are more smelly than meat per kg - while bag doesn't prioritise them, manually dropping all meat and adding guts first is a good idea.
+Also, Guts are more smelly than meat per kg - while bag doesn't prioritise any item/group, manually dropping other ones and adding guts first is a good idea.
 
-Scent value is vrom vanilla game and it's a arbiary number. [Fandom wiki have info on that](https://thelongdark.fandom.com/wiki/Scent)
+Scent value is from vanilla game and it's a arbiary number. [Fandom wiki have info on that](https://thelongdark.fandom.com/wiki/Scent)

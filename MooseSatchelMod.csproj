@@ -38,6 +38,6 @@
 	</ItemGroup>
 
   <PropertyGroup>
-    <PostBuildEvent>cp MooseSatchelMod.dll /mnt/steam/SteamLibrary/steamapps/common/TheLongDark/Mods/</PostBuildEvent>
+    <PostBuildEvent>cp MooseSatchelMod.dll /mnt/steam-nvme/SteamLibrary/steamapps/common/TheLongDark/Mods/</PostBuildEvent>
   </PropertyGroup>
 </Project>

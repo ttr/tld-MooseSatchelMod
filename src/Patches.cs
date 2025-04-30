@@ -1,7 +1,6 @@
 using HarmonyLib;
 using Il2Cpp;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace MooseSatchelMod
 {
@@ -27,7 +26,7 @@ namespace MooseSatchelMod
             public static void Postfix(GearItem gi)
             {
                 MooseSatchelMod.Log("AddGear " + gi.name);
-                if (gi.name == "GEAR_Gut" || MooseSatchelMod.isPerishableFood(gi))
+                if (MooseSatchelMod.isPerishableGroup1(gi) || MooseSatchelMod.isPerishableGroup2(gi) || MooseSatchelMod.isPerishableGroup3(gi))
                 {
                     MooseSatchelMod.addToBag(gi);
                 }
@@ -42,7 +41,7 @@ namespace MooseSatchelMod
 
                 MooseSatchelMod.Log("DestroyGear " + go.name);
                 GearItem gi = go.GetComponent<GearItem>();
-                if (gi.name == "GEAR_Gut" || MooseSatchelMod.isPerishableFood(gi))
+                if (MooseSatchelMod.isPerishableGroup1(gi) || MooseSatchelMod.isPerishableGroup2(gi) || MooseSatchelMod.isPerishableGroup3(gi))
                 {
                     MooseSatchelMod.removeFromBag(gi);
                 }
@@ -55,7 +54,7 @@ namespace MooseSatchelMod
             public static void Postfix(GearItem __instance)
             {
                 MooseSatchelMod.Log("Drop " + __instance.name);
-                if (__instance.name == "GEAR_Gut" || MooseSatchelMod.isPerishableFood(__instance))
+                if (MooseSatchelMod.isPerishableGroup1(__instance) || MooseSatchelMod.isPerishableGroup2(__instance) || MooseSatchelMod.isPerishableGroup3(__instance))
                 {
                     MooseSatchelMod.removeFromBag(__instance);
                 }
@@ -89,24 +88,7 @@ namespace MooseSatchelMod
             }
         }
         
-        [HarmonyPatch(typeof(ItemDescriptionPage), nameof(ItemDescriptionPage.m_ItemDescLabel), MethodType.Setter)]
-        public class ItemDescriptionPage_BuildItemDescription
-        {
-            private static void Postfix(ItemDescriptionPage __instance)
-            {
-                MooseSatchelMod.Log("ItemDesc " + __instance.name);
-                /*
-                if ((__instance.name == "GEAR_Gut" || MooseSatchelMod.isPerishableFood(__instance)) && MooseSatchelMod.isBagged(__instance))
-                {
-                    MooseSatchelMod.Log("BagDesc " + __instance.name);
-                    __result += "\n(This item is in Moose bag)";
-                }
-                else if (__instance.name == "GEAR_MooseHideBag") {
-                  __result += "\n Scent reduced: " + MooseSatchelMod.baggedScent();
-                }
-                */
-            }
-        }
+
         [HarmonyPatch(typeof(ItemDescriptionPage), nameof(ItemDescriptionPage.UpdateGearItemDescription))]
         public class ItemDescriptionPage_UpdateGearItemDescription
         {
@@ -114,7 +96,7 @@ namespace MooseSatchelMod
             {
               MooseSatchelMod.Log("GearDesc: "+ gi.name);
 
-                if ((gi.name == "GEAR_Gut" || MooseSatchelMod.isPerishableFood(gi)) && MooseSatchelMod.isBagged(gi))
+                if (MooseSatchelMod.isBagged(gi))
                 {
                   __instance.m_ItemDescLabel.text += "\n(This item is in Moose bag)";
                 }
