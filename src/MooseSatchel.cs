@@ -34,11 +34,14 @@ namespace MooseSatchelMod
         {
           //MelonLogger.Msg(msg);
         }
+        internal static void ClearData(){
+            MD.Clear();
+            MBD.Clear();
+        }
         internal static void LoadData()
         {
             MooseSatchelMod.Log("Loading data");
-            MD.Clear();
-            MBD.Clear();
+            ClearData();
             string? data = SaveMgr.Load("MD");
 
             if (!string.IsNullOrEmpty(data))
@@ -88,60 +91,57 @@ namespace MooseSatchelMod
         public static bool isPerishableGroup1(GearItem gi) // smelly
         {
             string name = gi.name.ToLower();
-            if (Settings.options.storeG1)
+            if (Settings.options.storeG1 && 
+                (
+                name == "gear_gut" ||
+                name == "gear_fishingbaita" ||
+                name == "gear_animalfat" ||
+                name == "gear_fatraw"
+                )
+            )
             {
-                if (
-                    name == "gear_gut" ||
-                    name == "animalfat" ||
-                    name == "fatraw"
-                    )
-                {
-                    return true;
-                }
+                return true;
             }
-            return false;
+        return false;
         }
         public static bool isPerishableGroup2(GearItem gi) // bloody
         {
             string name = gi.name.ToLower();
-            if (Settings.options.storeG2)
+            if (Settings.options.storeG2 &&
+                (
+                name.EndsWith("meatbear") ||
+                name.EndsWith("meatcougar") ||
+                name.EndsWith("meatdeer") ||
+                name.EndsWith("meatrabbit") ||
+                name.EndsWith("meatwolf") ||
+                name.EndsWith("meatmoose") ||
+                name.EndsWith("meatptarmigan") ||
+                name.EndsWith("cohosalmon") ||
+                name.EndsWith("lakewhitefish") ||
+                name.EndsWith("rainbowtrout") ||
+                name.EndsWith("burbot") ||
+                name.EndsWith("goldeye") ||
+                name.EndsWith("rockfish") ||
+                name.EndsWith("smallmouthbass")
+                )
+            )
             {
-                if (
-                    name.EndsWith("meatbear") ||
-                    name.EndsWith("meatcougar") ||
-                    name.EndsWith("meatdeer") ||
-                    name.EndsWith("meatrabbit") ||
-                    name.EndsWith("meatwolf") ||
-                    name.EndsWith("meatmoose") ||
-                    name.EndsWith("meatptarmigan") ||
-                    name.EndsWith("cohosalmon") ||
-                    name.EndsWith("lakewhitefish") ||
-                    name.EndsWith("rainbowtrout") ||
-                    name.EndsWith("burbot") ||
-                    name.EndsWith("goldeye") ||
-                    name.EndsWith("rockfish") ||
-                    name.EndsWith("smallmouthbass")
-                    )
-                {
-                    return true;
-                }
+                return true;
             }
             return false;
         }
         public static bool isPerishableGroup3(GearItem gi) // cooked food
         {
             string name = gi.name.ToLower();
-            if (Settings.options.storeG3)
+            if (Settings.options.storeG3 &&
+                (
+                name.StartsWith("gear_cookedpie") ||
+                name.StartsWith("gear_uncookedpie") ||
+                name.StartsWith("gear_cured")
+                )
+            )
             {
-                if (
-                    name.StartsWith("cookedpie") ||
-                    name.StartsWith("uncookedpie") ||
-                    name == "curedfish" ||
-                    name == "curedmeat"
-                    )
-                {
-                    return true;
-                }
+                return true;
             }
             return false;
         }
@@ -177,6 +177,7 @@ namespace MooseSatchelMod
                     fi.m_DailyHPDecayOutside = MD[guid].foodDecayOutdoor;
                 }
             }
+            MooseSatchelMod.Log("applyStats: " + gi.name + " " + freeze);
 
         }
         internal static void addToBag(GearItem gi)
@@ -197,7 +198,7 @@ namespace MooseSatchelMod
                 {
                     MooseData lMD = new MooseData();
                     MD.Add(guid, lMD);
-                    MooseSatchelMod.Log("addtobag: " + gi.name + " " + gikg + " guid: " + guid + " bgid: " + bgid);
+                    MooseSatchelMod.Log("addtobag: " + gi.name + " " + gikg + " guid: " + guid + " bgid: " + bgid + " scent: " + gi.m_Scent?.GetRange());
                     MD[guid].timestamp = GameManager.GetTimeOfDayComponent().GetTODSeconds(GameManager.GetTimeOfDayComponent().GetSecondsPlayedUnscaled());
                     MD[guid].ver = dataVersion;
                     MD[guid].foodId = guid;
@@ -205,7 +206,10 @@ namespace MooseSatchelMod
                     //MD[guid].scentIntensity = gi.m_Scent.GetRange();
                     MD[guid].weight = gikg;
                     MBD[bgid].weight += gikg;
-                    MBD[bgid].scent += gi.m_Scent.GetRange();
+                    if (gi.m_Scent) 
+                    {
+                        MBD[bgid].scent += gi.m_Scent.GetRange();
+                    }
 
                     if (gi.m_FoodItem)
                     {
@@ -223,12 +227,17 @@ namespace MooseSatchelMod
             string guid = ObjectGuid.GetGuidFromGameObject(gi.gameObject);
             if (!string.IsNullOrEmpty(guid) && MD.ContainsKey(guid))
             {
+                
                 string bgid = MD[guid].bagId;
-                MooseSatchelMod.Log("removefrombag: " + gi.name + " " + gi.WeightKG + "guid: " + guid + "bgid: " + bgid);
+                MooseSatchelMod.Log("removefrombag: " + gi.name + " " + MD[guid].weight + "guid: " + guid + "bgid: " + bgid);
                 applyStats(gi, false);
 
                 MBD[bgid].weight -= MD[guid].weight;
-                MBD[bgid].scent -= gi.m_Scent.GetRange();
+                if (gi.m_Scent) 
+                {
+                    MBD[bgid].scent -= gi.m_Scent.GetRange();
+                }
+
                 MD.Remove(guid);
                 SaveData();
             }
@@ -241,22 +250,24 @@ namespace MooseSatchelMod
                 ObjectGuid.MaybeAttachObjectGuidAndRegister(bag.gameObject, Guid.NewGuid().ToString());
                 guid = ObjectGuid.GetGuidFromGameObject(bag.gameObject);
             }
-            MooseBagData lMBD = new MooseBagData();
-            MBD.Add(guid, lMBD);
-            MBD[guid].ver = dataVersion;
-            MBD[guid].timestamp = GameManager.GetTimeOfDayComponent().GetTODSeconds(GameManager.GetTimeOfDayComponent().GetSecondsPlayedUnscaled());
-            MBD[guid].bagId = guid;
-            MBD[guid].weight = 0;
-            MBD[guid].scent = 0;
+            if (!MBD.ContainsKey(guid)) { // scene change - bag is 're-equipped after data is loaded'
+                MooseBagData lMBD = new MooseBagData();
+                MBD.Add(guid, lMBD);
+                MBD[guid].ver = dataVersion;
+                MBD[guid].timestamp = GameManager.GetTimeOfDayComponent().GetTODSeconds(GameManager.GetTimeOfDayComponent().GetSecondsPlayedUnscaled());
+                MBD[guid].bagId = guid;
+                MBD[guid].weight = 0;
+                MBD[guid].scent = 0;
 
-            // loop via inventory and add stuff
-            Inventory inventoryComponent = GameManager.GetInventoryComponent();
-            foreach (GearItemObject item in inventoryComponent.m_Items)
-            {
-                GearItem gi = item;
-                if (isPerishableGroup1(gi) || isPerishableGroup2(gi) || isPerishableGroup3(gi))
+                // loop via inventory and add stuff
+                Inventory inventoryComponent = GameManager.GetInventoryComponent();
+                foreach (GearItemObject item in inventoryComponent.m_Items)
                 {
-                    addToBag(gi);
+                    GearItem gi = item;
+                    if (isPerishableGroup1(gi) || isPerishableGroup2(gi) || isPerishableGroup3(gi))
+                    {
+                        addToBag(gi);
+                    }
                 }
             }
         }
@@ -277,7 +288,7 @@ namespace MooseSatchelMod
                     }
                 }
 
-                MooseSatchelMod.Log(guid);
+                MooseSatchelMod.Log("removeBag: " + guid);
                 MBD.Remove(guid);
             }
         }
@@ -300,7 +311,6 @@ namespace MooseSatchelMod
             {
                 scent += MBD[bag].scent;
             }
-            MooseSatchelMod.Log("BagScent " + scent);
             return scent * (1f - Settings.options.scent);
 
         }

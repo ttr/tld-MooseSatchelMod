@@ -31,6 +31,10 @@ namespace MooseSatchelMod
 		[Description("Items like pies or cured meat/fish. Those do not give away scent, but keeping them in bag slows decay. Recommended: True")]
 		public bool storeG3 = true;
 
+		[Name("ScentDebugging")]
+		[Description("Will put scent value in description on each item if there is scent value. Imersion breaking: keep disabled")]
+		public bool scentValesInDesc = false;
+
 	}
 	internal static class Settings
 	{

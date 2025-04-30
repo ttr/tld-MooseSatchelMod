@@ -13,7 +13,11 @@ namespace MooseSatchelMod
         {
             public static void Prefix()
             {
-                if (!InterfaceManager.IsMainMenuEnabled())
+                if (InterfaceManager.IsMainMenuEnabled())
+                {
+                    MooseSatchelMod.ClearData();
+                }
+                else if (!InterfaceManager.IsMainMenuEnabled() && !GameManager.IsBootSceneActive() && !GameManager.IsEmptySceneActive())
                 {
                   MooseSatchelMod.LoadData();
                 }
@@ -94,14 +98,18 @@ namespace MooseSatchelMod
         {
             private static void Postfix(ItemDescriptionPage __instance, GearItem gi)
             {
-              MooseSatchelMod.Log("GearDesc: "+ gi.name);
+              MooseSatchelMod.Log("GearDesc: " + gi.name + "|");
 
                 if (MooseSatchelMod.isBagged(gi))
                 {
                   __instance.m_ItemDescLabel.text += "\n(This item is in Moose bag)";
                 }
                 else if (gi.name == "GEAR_MooseHideBag") {
-                  __instance.m_ItemDescLabel.text += "\n Scent reduced: " + MooseSatchelMod.baggedScent();
+                  __instance.m_ItemDescLabel.text += "\n Scent reduced (total): " + MooseSatchelMod.baggedScent();
+                }
+                if (Settings.options.scentValesInDesc && gi.m_Scent)
+                {
+                    __instance.m_ItemDescLabel.text += "\n(RawScent:" + gi.m_Scent.GetRange() + ")";
                 }
                 
             }
