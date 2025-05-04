@@ -19,11 +19,12 @@ namespace MooseSatchelMod
     }
     internal class MooseSatchelMod : MelonMod
     {
-        private static int dataVersion = 1;
+        private static int dataVersion = 3;
         private static float bagMaxWeight = 5f;
         private static Dictionary<string, MooseData> MD = new Dictionary<string, MooseData>();
         private static Dictionary<string, MooseBagData> MBD = new Dictionary<string, MooseBagData>();
         internal static ModDataManager SaveMgr = new ModDataManager("MooseSatchelMod", false);
+        internal static bool SaveDataLoaded = false;
 
         public override void OnInitializeMelon()
         {
@@ -32,11 +33,12 @@ namespace MooseSatchelMod
         }
         public static void Log(string msg)
         {
-          //MelonLogger.Msg(msg);
+          MelonLogger.Msg(msg);
         }
         internal static void ClearData(){
             MD.Clear();
             MBD.Clear();
+            SaveDataLoaded = false;
         }
         internal static void LoadData()
         {
@@ -52,7 +54,10 @@ namespace MooseSatchelMod
                 {
                     MooseData lMD = new MooseData();
                     entry.Value.Populate(lMD);
-                    MD.Add(entry.Key, lMD);
+                    if (lMD.ver == dataVersion) {
+                        MD.Add(entry.Key, lMD);
+                    }
+                    
                 }
             }
 
@@ -65,7 +70,9 @@ namespace MooseSatchelMod
                 {
                     MooseBagData lMBD = new MooseBagData();
                     entry.Value.Populate(lMBD);
-                    MBD.Add(entry.Key, lMBD);
+                    if (lMBD.ver == dataVersion) {
+                        MBD.Add(entry.Key, lMBD);
+                    }
                 }
             }
             // look for items in player inverntory and apply stats
@@ -79,11 +86,12 @@ namespace MooseSatchelMod
                     applyStats(gi, true);
                 }
             }
+            SaveDataLoaded = true;
         }
 
         internal static void SaveData()
         {
-            //MooseSatchelMod.Log("saving data");
+            MooseSatchelMod.Log("saving data");
             SaveMgr.Save(JSON.Dump(MD, EncodeOptions.NoTypeHints), "MD");
             SaveMgr.Save(JSON.Dump(MBD, EncodeOptions.NoTypeHints), "MBD");
         }
@@ -94,7 +102,6 @@ namespace MooseSatchelMod
             if (Settings.options.storeG1 && 
                 (
                 name == "gear_gut" ||
-                name == "gear_fishingbaita" ||
                 name == "gear_animalfat" ||
                 name == "gear_fatraw"
                 )

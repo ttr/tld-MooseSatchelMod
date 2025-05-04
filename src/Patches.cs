@@ -1,38 +1,52 @@
 using HarmonyLib;
 using Il2Cpp;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace MooseSatchelMod
 {
   
     internal static class Patches
     {
-
         [HarmonyPatch(typeof(GameManager), nameof(GameManager.AllScenesLoaded))]
-        internal class GameManager_Awake
-        {
-            public static void Prefix()
-            {
+        internal class GameManager_Awake{
+            public static void Prefix(){
                 if (InterfaceManager.IsMainMenuEnabled())
                 {
                     MooseSatchelMod.ClearData();
                 }
-                else if (!InterfaceManager.IsMainMenuEnabled() && !GameManager.IsBootSceneActive() && !GameManager.IsEmptySceneActive())
-                {
-                  MooseSatchelMod.LoadData();
-                }
             }
         }
-
+        [HarmonyPatch(typeof(SaveGameSystem), nameof(SaveGameSystem.RestoreGlobalData))]
+        internal class SaveGameSystem_RestoreGlobalData
+        {
+            public static void Postfix(string name)
+            {
+                MooseSatchelMod.Log($"Loading save date {name}");
+                MooseSatchelMod.LoadData();
+            }
+        }
+        [HarmonyPatch(typeof(SaveGameSystem), nameof(SaveGameSystem.SaveGlobalData))]
+        internal class SaveGameSystem_SaveGlobalData
+        {
+            public static void Postfix(SlotData slot)
+            {
+                MooseSatchelMod.SaveData();
+                MooseSatchelMod.ClearData();
+            }
+        }
         [HarmonyPatch(typeof(Inventory), nameof(Inventory.AddGear))]
         public class Invetory_AddGear
         {
             public static void Postfix(GearItem gi)
             {
-                MooseSatchelMod.Log("AddGear " + gi.name);
-                if (MooseSatchelMod.isPerishableGroup1(gi) || MooseSatchelMod.isPerishableGroup2(gi) || MooseSatchelMod.isPerishableGroup3(gi))
-                {
-                    MooseSatchelMod.addToBag(gi);
+                if (MooseSatchelMod.SaveDataLoaded) {
+                    MooseSatchelMod.Log("AddGear " + gi.name);
+                    if (MooseSatchelMod.isPerishableGroup1(gi) || MooseSatchelMod.isPerishableGroup2(gi) || MooseSatchelMod.isPerishableGroup3(gi))
+                    {
+                        MooseSatchelMod.addToBag(gi);
+                    }
                 }
             }
         }
@@ -62,7 +76,6 @@ namespace MooseSatchelMod
                 {
                     MooseSatchelMod.removeFromBag(__instance);
                 }
-
             }
         }
 
@@ -71,12 +84,10 @@ namespace MooseSatchelMod
         {
             public static void Postfix(GearItem gi)
             {
-                MooseSatchelMod.Log("PutOn " + gi.name);
-                if (gi.name == "GEAR_MooseHideBag")
-                {
+                if (MooseSatchelMod.SaveDataLoaded && gi.name == "GEAR_MooseHideBag") {
+                    MooseSatchelMod.Log("PutOn " + gi.name);
                     MooseSatchelMod.putBag(gi);
                 }
-
             }
         }
         [HarmonyPatch(typeof(PlayerManager), nameof(PlayerManager.TakeOffClothingItem))]
