@@ -10,13 +10,14 @@ namespace MooseSatchelMod
   
     internal static class Patches
     {
-        [HarmonyPatch(typeof(GameManager), nameof(GameManager.AllScenesLoaded))]
-        internal class GameManager_Awake{
-            public static void Prefix(){
-                if (InterfaceManager.IsMainMenuEnabled())
-                {
-                    MooseSatchelMod.ClearData();
-                }
+
+        [HarmonyPatch(typeof(GameManager), nameof(GameManager.DoExitToMainMenu))]
+        [HarmonyPatch(typeof(GameManager), nameof(GameManager.LoadMainMenu))]
+        private static class ModData_GameManager_MainMenu
+        {
+            private static void Postfix()
+            {
+                MooseSatchelMod.ClearData();
             }
         }
         [HarmonyPatch(typeof(SaveGameSystem), nameof(SaveGameSystem.RestoreGlobalData))]
@@ -25,6 +26,7 @@ namespace MooseSatchelMod
             public static void Postfix(string name)
             {
                 MooseSatchelMod.Log($"Loading save date {name}");
+                MooseSatchelMod.ClearData();
                 MooseSatchelMod.LoadData();
             }
         }
@@ -34,7 +36,6 @@ namespace MooseSatchelMod
             public static void Postfix(SlotData slot)
             {
                 MooseSatchelMod.SaveData();
-                MooseSatchelMod.ClearData();
             }
         }
         [HarmonyPatch(typeof(Inventory), nameof(Inventory.AddGear))]
@@ -73,7 +74,7 @@ namespace MooseSatchelMod
             public static void Postfix(GearItem __instance)
             {
                 MooseSatchelMod.Log("Drop " + __instance.name);
-                if (MooseSatchelMod.GetScent(__instance.name) > 1 ) // use GetScent to remove items from bag if setings where changed during gameplay
+                if (MooseSatchelMod.GetScent(__instance.name) > -1 ) // use GetScent to remove items from bag if setings where changed during gameplay
                 {
                     MooseSatchelMod.removeFromBag(__instance);
                 }
