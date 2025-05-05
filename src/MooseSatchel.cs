@@ -96,63 +96,6 @@ namespace MooseSatchelMod
             SaveMgr.Save(JSON.Dump(MBD, EncodeOptions.NoTypeHints), "MBD");
         }
 
-        public static bool isPerishableGroup1(GearItem gi) // smelly
-        {
-            string name = gi.name.ToLower();
-            if (Settings.options.storeG1 && 
-                (
-                name == "gear_gut" ||
-                name == "gear_animalfat" ||
-                name == "gear_fatraw"
-                )
-            )
-            {
-                return true;
-            }
-        return false;
-        }
-        public static bool isPerishableGroup2(GearItem gi) // bloody
-        {
-            string name = gi.name.ToLower();
-            if (Settings.options.storeG2 &&
-                (
-                name.EndsWith("meatbear") ||
-                name.EndsWith("meatcougar") ||
-                name.EndsWith("meatdeer") ||
-                name.EndsWith("meatrabbit") ||
-                name.EndsWith("meatwolf") ||
-                name.EndsWith("meatmoose") ||
-                name.EndsWith("meatptarmigan") ||
-                name.EndsWith("cohosalmon") ||
-                name.EndsWith("lakewhitefish") ||
-                name.EndsWith("rainbowtrout") ||
-                name.EndsWith("burbot") ||
-                name.EndsWith("goldeye") ||
-                name.EndsWith("rockfish") ||
-                name.EndsWith("smallmouthbass")
-                )
-            )
-            {
-                return true;
-            }
-            return false;
-        }
-        public static bool isPerishableGroup3(GearItem gi) // cooked food
-        {
-            string name = gi.name.ToLower();
-            if (Settings.options.storeG3 &&
-                (
-                name.StartsWith("gear_cookedpie") ||
-                name.StartsWith("gear_uncookedpie") ||
-                name.StartsWith("gear_cured")
-                )
-            )
-            {
-                return true;
-            }
-            return false;
-        }
-
         public static bool isBagged(GearItem gi)
         {
             string guid = ObjectGuid.GetGuidFromGameObject(gi.gameObject);
@@ -205,7 +148,7 @@ namespace MooseSatchelMod
                 {
                     MooseData lMD = new MooseData();
                     MD.Add(guid, lMD);
-                    MooseSatchelMod.Log("addtobag: " + gi.name + " " + gikg + " guid: " + guid + " bgid: " + bgid + " scent: " + gi.m_Scent?.GetRange());
+                    MooseSatchelMod.Log("addtobag: " + gi.name + " " + gikg + " guid: " + guid + " bgid: " + bgid + " scent: " + gi.m_Scent?.GetRange() + "/" + GetScent(gi.name));
                     MD[guid].timestamp = GameManager.GetTimeOfDayComponent().GetTODSeconds(GameManager.GetTimeOfDayComponent().GetSecondsPlayedUnscaled());
                     MD[guid].ver = dataVersion;
                     MD[guid].foodId = guid;
@@ -215,7 +158,7 @@ namespace MooseSatchelMod
                     MBD[bgid].weight += gikg;
                     if (gi.m_Scent) 
                     {
-                        MBD[bgid].scent += gi.m_Scent.GetRange();
+                        MBD[bgid].scent += GetScent(gi.name); //gi.m_Scent.GetRange();
                     }
 
                     if (gi.m_FoodItem)
@@ -242,7 +185,7 @@ namespace MooseSatchelMod
                 MBD[bgid].weight -= MD[guid].weight;
                 if (gi.m_Scent) 
                 {
-                    MBD[bgid].scent -= gi.m_Scent.GetRange();
+                    MBD[bgid].scent -= GetScent(gi.name); //gi.m_Scent.GetRange();
                 }
 
                 MD.Remove(guid);
@@ -271,7 +214,7 @@ namespace MooseSatchelMod
                 foreach (GearItemObject item in inventoryComponent.m_Items)
                 {
                     GearItem gi = item;
-                    if (isPerishableGroup1(gi) || isPerishableGroup2(gi) || isPerishableGroup3(gi))
+                    if (CanBeBagged(gi))
                     {
                         addToBag(gi);
                     }
@@ -289,7 +232,7 @@ namespace MooseSatchelMod
                 foreach (GearItemObject item in inventoryComponent.m_Items)
                 {
                     GearItem gi = item;
-                    if (isPerishableGroup1(gi) || isPerishableGroup2(gi) || isPerishableGroup3(gi))
+                    if (GetScent(gi.name) > -1) // use GetScent to remove items from bag if setings where changed during gameplay
                     {
                         removeFromBag(gi);
                     }
@@ -320,6 +263,27 @@ namespace MooseSatchelMod
             }
             return scent * (1f - Settings.options.scent);
 
+        }
+        public static int GetScent(string gi)
+        {
+            if ( gi == "GEAR_Gut" ) { return 20; }
+            else if ( gi == "GEAR_AnimalFat" ) { return 5; }
+            else if ( gi.StartsWith("GEAR_RawMeat") || gi == "GEAR_RawCohoSalmon" || gi == "GEAR_RawLakeWhiteFish" || gi == "GEAR_RawRainbowTrout" || gi == "GEAR_RawBurbot" || gi == "GEAR_RawGoldeye" || gi == "GEAR_RawRockfish" || gi == "GEAR_RawSmallMouthBass" || gi == "GEAR_RawRedIrishLord") { return 15;} 
+            else if ( gi.StartsWith("GEAR_CookedMeat") || gi == "GEAR_CookedCohoSalmon" || gi == "GEAR_CookedLakeWhiteFish" || gi == "GEAR_CookedRainbowTrout" || gi == "GEAR_CookedBurbot" || gi == "GEAR_CookedGoldeye" || gi == "GEAR_CookedRockfish" || gi == "GEAR_CookedSmallMouthBass" || gi == "GEAR_CookedRedIrishLord") { return 5;}
+            else if ( gi == "GEAR_CookedPieVenison" || gi == "GEAR_CookedPieRabbit" || gi == "GEAR_CookedPiePtarmigan" || gi == "GEAR_CookedPieMeat" || gi == "GEAR_CookedPiePredator" || gi == "GEAR_CookedFishcakes") { return 5;}
+            else if ( gi == "GEAR_CookedPieFishermans") { return -1;}
+            else if ( gi.StartsWith("GEAR_CookedPie") || gi.StartsWith("GEAR_Cured") ) { return 0;}
+            return -1;
+        }
+        public static bool CanBeBagged(GearItem gi) {
+            int treshold = 0;
+            if (Settings.options.storeNonSmellyCooked) {
+                treshold = -1;
+            }
+            if (GetScent(gi.name) > treshold) {
+                return true;
+            }
+            return false;
         }
     }
     internal class MooseData {

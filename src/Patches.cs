@@ -1,5 +1,6 @@
 using HarmonyLib;
 using Il2Cpp;
+using Il2CppSteamworks;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -43,7 +44,7 @@ namespace MooseSatchelMod
             {
                 if (MooseSatchelMod.SaveDataLoaded) {
                     MooseSatchelMod.Log("AddGear " + gi.name);
-                    if (MooseSatchelMod.isPerishableGroup1(gi) || MooseSatchelMod.isPerishableGroup2(gi) || MooseSatchelMod.isPerishableGroup3(gi))
+                    if (MooseSatchelMod.CanBeBagged(gi))
                     {
                         MooseSatchelMod.addToBag(gi);
                     }
@@ -59,7 +60,7 @@ namespace MooseSatchelMod
 
                 MooseSatchelMod.Log("DestroyGear " + go.name);
                 GearItem gi = go.GetComponent<GearItem>();
-                if (MooseSatchelMod.isPerishableGroup1(gi) || MooseSatchelMod.isPerishableGroup2(gi) || MooseSatchelMod.isPerishableGroup3(gi))
+                if (MooseSatchelMod.GetScent(gi.name) > -1) // use GetScent to remove items from bag if setings where changed during gameplay
                 {
                     MooseSatchelMod.removeFromBag(gi);
                 }
@@ -72,7 +73,7 @@ namespace MooseSatchelMod
             public static void Postfix(GearItem __instance)
             {
                 MooseSatchelMod.Log("Drop " + __instance.name);
-                if (MooseSatchelMod.isPerishableGroup1(__instance) || MooseSatchelMod.isPerishableGroup2(__instance) || MooseSatchelMod.isPerishableGroup3(__instance))
+                if (MooseSatchelMod.GetScent(__instance.name) > 1 ) // use GetScent to remove items from bag if setings where changed during gameplay
                 {
                     MooseSatchelMod.removeFromBag(__instance);
                 }
@@ -118,20 +119,17 @@ namespace MooseSatchelMod
                 else if (gi.name == "GEAR_MooseHideBag") {
                   __instance.m_ItemDescLabel.text += "\n Scent reduced (total): " + MooseSatchelMod.baggedScent();
                 }
-                if (Settings.options.scentValesInDesc && gi.m_Scent)
-                {
-                    __instance.m_ItemDescLabel.text += "\n(RawScent:" + gi.m_Scent.GetRange() + ")";
-                }
-                
             }
         }
         
         [HarmonyPatch(typeof(Inventory), nameof(Inventory.GetExtraScentIntensity))]
         internal class Inventory_GetExtraScentIntensity
         {
-            private static void Postfix(ref float __result)
+            private static void Postfix(Inventory __instance, ref float __result)
             {
                     __result -= MooseSatchelMod.baggedScent();
+                    //MooseSatchelMod.Log("total:" + __instance.m_TotalScentIntensity);
+
             }
         }
     }

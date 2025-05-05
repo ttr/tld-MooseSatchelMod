@@ -13,9 +13,6 @@ If in doubt, re-equipp moose bag(s) so it will re-add all items.
 
 Also, Guts are more smelly than meat per kg - while bag doesn't prioritise any item/group, manually dropping other ones and adding guts first is a good idea.
 
-Scent value is from vanilla game and it's a arbiary number. [Fandom wiki have info on that](https://thelongdark.fandom.com/wiki/Scent). That said, values on that page might be wrong.
-As of 2025.05 some values:
-* Gut is 50
-* fat is 50 per 1kg
-* meat pies are 10 per piece (30 per cooked stact)
-* fishing bait 0 
+Scent value is from vanilla game and it's a arbiary number. [Fandom wiki have info on that](https://thelongdark.fandom.com/wiki/Scent).
+
+Stews, Soups and Dockwork's Pie are not baggable (immersion breaking)

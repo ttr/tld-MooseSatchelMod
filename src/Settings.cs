@@ -19,21 +19,9 @@ namespace MooseSatchelMod
 		[Slider(0f, 1f)]
 		public float outdoor = 0f;
 
-		[Name("Store smelly items")]
-		[Description("Items like animal fat and raw guts. Recommended: True")]
-		public bool storeG1 = true;
-
-		[Name("Store meat/fish")]
-		[Description("Cooked and raw versions of meat and fish. Recommended: True")]
-		public bool storeG2 = true;
-
 		[Name("Store processed food")]
-		[Description("Items like pies or cured meat/fish. Those do not give away scent, but keeping them in bag slows decay. Recommended: True")]
-		public bool storeG3 = true;
-
-		[Name("ScentDebugging")]
-		[Description("Will put scent value in description on each item if there is scent value. Imersion breaking: keep disabled")]
-		public bool scentValesInDesc = false;
+		[Description("Items like veggie pies or cured meat/fish. Those do not give away scent, but keeping them in bag, slows decay. Recommended: True")]
+		public bool storeNonSmellyCooked = true;
 
 	}
 	internal static class Settings
