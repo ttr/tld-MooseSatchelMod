@@ -14,12 +14,12 @@ namespace MooseSatchelMod
         public const string Description = "A mod to reduce scent and decay for meat, fish and guts if added to Moose Bag.";
         public const string Author = "ttr";
         public const string Company = null;
-        public const string Version = "2.2.2";
+        public const string Version = "2.3.0";
         public const string DownloadLink = null;
     }
     internal class MooseSatchelMod : MelonMod
     {
-        private static int dataVersion = 3;
+        private static int dataVersion = 4;
         private static float bagMaxWeight = 5f;
         private static Dictionary<string, MooseData> MD = new Dictionary<string, MooseData>();
         private static Dictionary<string, MooseBagData> MBD = new Dictionary<string, MooseBagData>();
