@@ -14,7 +14,7 @@ namespace MooseSatchelMod
         public const string Description = "A mod to reduce scent and decay for meat, fish and guts if added to Moose Bag.";
         public const string Author = "ttr";
         public const string Company = null;
-        public const string Version = "2.3.0";
+        public const string Version = "2.3.1";
         public const string DownloadLink = null;
     }
     internal class MooseSatchelMod : MelonMod
@@ -33,7 +33,7 @@ namespace MooseSatchelMod
         }
         public static void Log(string msg)
         {
-          MelonLogger.Msg(msg);
+          //MelonLogger.Msg(msg);
         }
         internal static void ClearData(){
             MD.Clear();
